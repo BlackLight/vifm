@@ -20,7 +20,7 @@
 #define __COLOR_SCHEME_H__
 
 #include<limits.h>
-#define MAXNUM_COLOR 12
+#define MAXNUM_COLOR 256
 
 #define MENU_COLOR 0
 #define BORDER_COLOR 1
@@ -51,7 +51,6 @@ typedef struct _Col_Scheme {
 extern Col_scheme *col_schemes;
 
 void read_color_scheme_file();
-void write_color_scheme_file();
 int check_directory_for_color_scheme(const char *);
 void load_color_scheme(char  *name, char *dir);
 

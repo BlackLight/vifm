@@ -72,10 +72,15 @@ sort_dir_list(const void *one, const void *two)
 							 return (pfirst ? -1 : 1);
 				 break;
 
-		 case SORT_BY_SIZE:
+		 case SORT_BY_SIZE_ASCENDING:
 				 if (first->size == second->size)
 						break;
-				 return first->size - second->size;
+				 return first->size > second->size;
+
+		 case SORT_BY_SIZE_DESCENDING:
+				 if (first->size == second->size)
+					 break;
+				 return first->size < second->size;
 
 		 case SORT_BY_TIME_MODIFIED:
 				 if (first->mtime == second->mtime)
@@ -139,7 +144,7 @@ sort_key_cb(FileView *view)
 	int done = 0;
 	int abort = 0;
 	int top = 2;
-	int bottom = 12;
+	int bottom = top + NUM_SORT_OPTIONS - 1;
 	int curr = view->sort_type + 2;
 	int col = 6;
 	char filename[NAME_MAX];
@@ -203,6 +208,7 @@ sort_key_cb(FileView *view)
 		moveto_list_pos(view, find_file_pos_in_list(view, filename));
 		return;
 	}
+	curr_stats.setting_change = 1;
 
 	reset_sort_menu();
 	load_dir_list(view, 1);
@@ -235,10 +241,11 @@ show_sort_menu(FileView *view)
 	mvwaddstr(sort_win, 6, 4, " [ ] Mode");
 	mvwaddstr(sort_win, 7, 4, " [ ] Owner ID");
 	mvwaddstr(sort_win, 8, 4, " [ ] Owner Name");
-	mvwaddstr(sort_win, 9, 4, " [ ] Size");
-	mvwaddstr(sort_win, 10, 4, " [ ] Time Accessed");
-	mvwaddstr(sort_win, 11, 4, " [ ] Time Changed");
-	mvwaddstr(sort_win, 12, 4, " [ ] Time Modified");
+	mvwaddstr(sort_win, 9, 4, " [ ] Size (Ascending)");
+	mvwaddstr(sort_win, 10, 4, " [ ] Size (Descending)");
+	mvwaddstr(sort_win, 11, 4, " [ ] Time Accessed");
+	mvwaddstr(sort_win, 12, 4, " [ ] Time Changed");
+	mvwaddstr(sort_win, 13, 4, " [ ] Time Modified");
 	mvwaddch(sort_win, view->sort_type + 2, 6, '*');
 	sort_key_cb(view);
 }

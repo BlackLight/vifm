@@ -139,7 +139,7 @@ write_string_to_file(char *filename, char *string)
 	if((fp = fopen(filename, "w")) == NULL)
 		return 0;
 
-	fprintf(fp, string);
+	fprintf(fp, "%s", string);
 
 	fclose(fp);
 	return 1;

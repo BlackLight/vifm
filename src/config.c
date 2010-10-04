@@ -68,7 +68,7 @@ create_help_file(void)
 	char command[PATH_MAX];
 
 	snprintf(command, sizeof(command), CP_HELP);
-	fprintf(stderr, command);
+	fprintf(stderr, "%s", command);
 	file_exec(command);
 }
 
@@ -89,6 +89,7 @@ create_rc_file(void)
 static void
 load_default_configuration(void)
 {
+	cfg.using_default_config = 1;
 	cfg.use_trash = 1;
 	cfg.vi_command = strdup("vim");
 /*_SZ_BEGIN_*/
@@ -255,10 +256,10 @@ read_config_file(void)
 			{
 				lwin.filename_filter = (char *)realloc(lwin.filename_filter, 
 				strlen(s1) +1);
-				strncpy(lwin.filename_filter, s1, strlen(s1));
+				strcpy(lwin.filename_filter, s1);
 				lwin.prev_filter = (char *)realloc(lwin.prev_filter, 
 					strlen(s1) +1);
-				strncpy(lwin.prev_filter, s1, strlen(s1));
+				strcpy(lwin.prev_filter, s1);
 				continue;
 			}
 			if(!strcmp(line, "LWIN_INVERT"))
@@ -270,10 +271,10 @@ read_config_file(void)
 			{
 				rwin.filename_filter = (char *)realloc(rwin.filename_filter, 
 				strlen(s1) +1);
-				strncpy(rwin.filename_filter, s1, strlen(s1));
+				strcpy(rwin.filename_filter, s1);
 				rwin.prev_filter = (char *)realloc(rwin.prev_filter, 
 					strlen(s1) +1);
-				strncpy(rwin.prev_filter, s1, strlen(s1));
+				strcpy(rwin.prev_filter, s1);
 				continue;
 			}
 			if(!strcmp(line, "RWIN_INVERT"))
@@ -329,9 +330,14 @@ void
 write_config_file(void)
 {
 	FILE *fp;
-	int x;
+	int x = 0;
 	char config_file[PATH_MAX];
 	struct stat stat_buf;
+
+
+	/* None of the user settings have changed. */
+	if ((!curr_stats.setting_change) && (!cfg.using_default_config))
+		return;
 
 	curr_stats.getting_input = 1;
 
@@ -339,20 +345,14 @@ write_config_file(void)
 
 	if(stat(config_file, &stat_buf) == 0) 
 	{
-		if (stat_buf.st_mtime > curr_stats.config_file_mtime)
+		if ((stat_buf.st_mtime > curr_stats.config_file_mtime) &&
+				(!cfg.using_default_config))
 		{
 			if (! query_user_menu(" Vifmrc file has been modified ",
 				 "File has been modified would you still like to write to file? "))
-			{
-				write_color_scheme_file();
 				return;
-			}
 		}
 	}
-	/*
-	else
-		return;
-		*/
 
 	if((fp = fopen(config_file, "w")) == NULL)
 		return;
@@ -405,10 +405,12 @@ write_config_file(void)
 	fprintf(fp, "# Sort by Mode = 4\n");
 	fprintf(fp, "# Sort by Owner ID = 5\n");
 	fprintf(fp, "# Sort by Owner Name = 6\n");
-	fprintf(fp, "# Sort by Size = 7\n");
-	fprintf(fp, "# Sort by Time Accessed =8\n");
-	fprintf(fp, "# Sort by Time Changed =9\n");
-	fprintf(fp, "# Sort by Time Modified =10\n");
+	fprintf(fp, "# Sort by Size (Ascending) = 7\n");
+	fprintf(fp, "# Sort by Size (Descending) = 8\n");
+
+	fprintf(fp, "# Sort by Time Accessed =9\n");
+	fprintf(fp, "# Sort by Time Changed =10\n");
+	fprintf(fp, "# Sort by Time Modified =11\n");
 	fprintf(fp, "# This can be set with the :sort command in vifm.\n");
 	fprintf(fp, "\nLEFT_WINDOW_SORT_TYPE=%d\n", lwin.sort_type);
 	fprintf(fp, "\nRIGHT_WINDOW_SORT_TYPE=%d\n", rwin.sort_type);
@@ -482,8 +484,6 @@ write_config_file(void)
 /*_SZ_END_*/
 
 	fclose(fp);
-
-	write_color_scheme_file();
 
 	curr_stats.getting_input = 0;
 }

@@ -45,7 +45,23 @@
 #include "ui.h"
 #include "utils.h" /* update_term_title() */
 #include "fileops.h"
+#include "file_info.h"
 
+void
+friendly_size_notation(int num, int str_size, char *str)
+{
+	const char* units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
+	int u = 0;
+	double d = num;
+
+	while(d >= 1024.0 && u < (sizeof(units)/sizeof(*units)))
+	{
+		d /= 1024.0;
+		++u;
+	}
+	snprintf(str, str_size, "%.1f %s", d, units[u]);
+
+}
 
 static void
 add_sort_type_info(FileView *view, int y, int x, int current_line)
@@ -117,12 +133,22 @@ add_sort_type_info(FileView *view, int y, int x, int current_line)
 			 break;
 		case SORT_BY_NAME:
 		case SORT_BY_EXTENSION:
-		case SORT_BY_SIZE:
-				snprintf(buf, sizeof(buf), " %d", view->dir_entry[x].size);
-			break;
+		case SORT_BY_SIZE_ASCENDING:
+		case SORT_BY_SIZE_DESCENDING:
 		default:
-				snprintf(buf, sizeof(buf), " %d", view->dir_entry[x].size);
-			break;
+			 {
+				 char str[24] = "";
+
+				 describe_file_size(str, sizeof(str),
+						 view->dir_entry[x].size);
+				 /*
+				 friendly_size_notation(view->dir_entry[x].size,
+						 sizeof(str), str);
+						 */
+
+				 snprintf(buf, sizeof(buf), " %s", str);
+			 }
+			 break;
     }
 
 	if (current_line)
@@ -347,6 +373,7 @@ draw_dir_list(FileView *view, int top, int pos)
 				view->dir_entry[x].name);
 
 		wmove(view->win, y, 1);
+
 		if(view->dir_entry[x].selected)
 		{
 			LINE_COLOR = SELECTED_COLOR + color_scheme;
@@ -530,8 +557,6 @@ moveto_list_pos(FileView *view, int pos)
 	}
 
 	view->list_pos = pos;
-
-
 
 	if(redraw)
 		draw_dir_list(view, view->top_line, view->curr_line);
@@ -721,7 +746,7 @@ change_directory(FileView *view, char *directory)
 
 	save_view_history(view);
 
-	snprintf(dir_dup, PATH_MAX, directory);
+	snprintf(dir_dup, PATH_MAX, "%s", directory);
 
 	snprintf(view->last_dir, sizeof(view->last_dir), "%s", view->curr_dir);
 
@@ -825,7 +850,7 @@ change_directory(FileView *view, char *directory)
 			tok = strtok(NULL, "/");
 		}
 
-		snprintf(dir_dup, PATH_MAX, newdir);
+		snprintf(dir_dup, PATH_MAX, "%s", newdir);
 
 		if(!strcmp(dir_dup,""))
 		   	strcpy(dir_dup,"/");
@@ -853,12 +878,12 @@ change_directory(FileView *view, char *directory)
 			if (view->curr_dir[strlen(view->curr_dir)-1] != '/')
 				strcat(view->curr_dir,"/");
 
-			snprintf(newdir, PATH_MAX, view->curr_dir);
+			snprintf(newdir, PATH_MAX, "%s", view->curr_dir);
 			strncat(newdir, dir_dup, strlen(dir_dup));
 
 			//view->curr_dir[strlen(view->curr_dir) -1] = '\0';
 
-			snprintf(dir_dup, PATH_MAX, newdir);
+			snprintf(dir_dup, PATH_MAX, "%s", newdir);
 		}
 		/* else  It is an absolute path and does not need to be modified
 		 */
@@ -922,7 +947,7 @@ change_directory(FileView *view, char *directory)
 		dir_dup[strlen(dir_dup) - 1] = '\0';
 
 	if(strcmp(dir_dup, view->curr_dir))
-	   	snprintf(view->curr_dir, PATH_MAX, dir_dup);
+	   	snprintf(view->curr_dir, PATH_MAX, "%s", dir_dup);
 
 
 
@@ -1062,7 +1087,7 @@ load_dir_list(FileView *view, int reload)
 		/* Load the inode info */ 
 		lstat(view->dir_entry[view->list_rows].name, &s);
 
-		view->dir_entry[view->list_rows].size = (int)s.st_size;
+		view->dir_entry[view->list_rows].size = (uintmax_t)s.st_size;
 		view->dir_entry[view->list_rows].mode = s.st_mode;
 		view->dir_entry[view->list_rows].uid = s.st_uid;
 		view->dir_entry[view->list_rows].gid = s.st_gid;

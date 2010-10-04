@@ -81,7 +81,8 @@ update_stat_window(FileView *view)
 
 	getmaxyx(stat_win, y, x);
 	snprintf(name_buf, sizeof(name_buf), "%s", get_current_file_name(view));
-	describe_file_size(size_buf, sizeof(size_buf), view);
+	describe_file_size(size_buf, sizeof(size_buf),
+			view->dir_entry[view->list_pos].size);
 	
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{
@@ -97,7 +98,7 @@ update_stat_window(FileView *view)
 	werase(stat_win);
 
 	mvwaddstr(stat_win, 0, 2, name_buf);
-	mvwaddstr(stat_win, 0, 20, size_buf);
+	mvwaddstr(stat_win, 0, 24, size_buf);
 	mvwaddstr(stat_win, 0, 36, perm_buf);
 	mvwaddstr(stat_win, 0, 46, uid_buf);
 	snprintf(name_buf, sizeof(name_buf), "%d %s filtered", 
@@ -157,11 +158,11 @@ setup_ncurses_interface()
 	
 	werase(stdscr);
 
-	menu_win = newwin(screen_y - 1, screen_x , 0, 0);
+	menu_win = newwin(screen_y - 1, screen_x, 0, 0);
 	wbkgdset(menu_win, COLOR_PAIR(WIN_COLOR));
 	werase(menu_win);
 
-	sort_win = newwin(14, 30, (screen_y -12)/2, (screen_x -30)/2);
+	sort_win = newwin(NUM_SORT_OPTIONS + 3, 30, (screen_y -12)/2, (screen_x -30)/2);
 	wbkgdset(sort_win, COLOR_PAIR(WIN_COLOR));
 	werase(sort_win);
 
@@ -173,52 +174,47 @@ setup_ncurses_interface()
 	wbkgdset(error_win, COLOR_PAIR(WIN_COLOR));
 	werase(error_win);
 
-	lborder = newwin(screen_y - 2, 1, 0, 0);
-
-	wbkgdset(lborder, COLOR_PAIR(BORDER_COLOR));
-
-	werase(lborder);
+	/* lborder = newwin(screen_y - 2, 1, 0, 0); */
+	/* wbkgdset(lborder, COLOR_PAIR(BORDER_COLOR)); */
+	/* werase(lborder); */
 
 	if (curr_stats.number_of_windows == 1)
-		lwin.title = newwin(0, screen_x -2, 0, 1);
+		lwin.title = newwin(0, screen_x -2, 0, 0);
 	else
 		lwin.title = newwin(0, screen_x/2 -1, 0, 1);
 		
-	wattrset(lwin.title, A_BOLD);
-	wbkgdset(lwin.title, COLOR_PAIR(BORDER_COLOR));
-
-	werase(lwin.title);
+	/* wattrset(lwin.title, A_BOLD); */
+	/* wbkgdset(lwin.title, COLOR_PAIR(BORDER_COLOR)); */
+	/* werase(lwin.title); */
 
 	if (curr_stats.number_of_windows == 1)
-		lwin.win = newwin(screen_y - 3, screen_x -2, 1, 1);
+		lwin.win = newwin(screen_y -3, screen_x -2, 1, 1);
 	else
-		lwin.win = newwin(screen_y - 3, screen_x/2 -2, 1, 1);
+		lwin.win = newwin(screen_y -3, screen_x/2 -2, 1, 1);
 
 	keypad(lwin.win, TRUE);
 	wbkgdset(lwin.win, COLOR_PAIR(WIN_COLOR));
 	wattrset(lwin.win, A_BOLD);
 	wattron(lwin.win, A_BOLD);
 	werase(lwin.win);
+
 	getmaxyx(lwin.win, y, x);
-	lwin.window_rows = y -1;
+	lwin.window_rows = y -2;
 	lwin.window_width = x -1;
 
-	mborder = newwin(screen_y, 2, 0, screen_x/2 -1);
-
-	wbkgdset(mborder, COLOR_PAIR(BORDER_COLOR));
-
-	werase(mborder);
+	/* mborder = newwin(screen_y, 1, 0, screen_x/2 -1); */
+	/* wbkgdset(mborder, COLOR_PAIR(BORDER_COLOR)); */
+	/* werase(mborder); */
 
 	if (curr_stats.number_of_windows == 1)
 		rwin.title = newwin(0, screen_x -2  , 0, 1);
 	else
-		rwin.title = newwin(1, screen_x/2 -1  , 0, screen_x/2 +1);
+		rwin.title = newwin(1, screen_x/2+2, 0, screen_x/2-1 );
 
-	wbkgdset(rwin.title, COLOR_PAIR(BORDER_COLOR));
-	wattrset(rwin.title, A_BOLD);
-	wattroff(rwin.title, A_BOLD);
-
-	werase(rwin.title);
+	/* wbkgdset(rwin.title, COLOR_PAIR(BORDER_COLOR)); */
+	/* wattrset(rwin.title, A_BOLD); */
+	/* wattroff(rwin.title, A_BOLD); */
+	/* werase(rwin.title); */
 
 	if (curr_stats.number_of_windows == 1)
 		rwin.win = newwin(screen_y - 3, screen_x -2 , 1, 1);
@@ -231,19 +227,16 @@ setup_ncurses_interface()
 	wbkgdset(rwin.win, COLOR_PAIR(WIN_COLOR));
 	werase(rwin.win);
 	getmaxyx(rwin.win, y, x);
-	rwin.window_rows = y - 1;
+	rwin.window_rows = y -2;
 	rwin.window_width = x -1;
 
-	rborder = newwin(screen_y - 2, 1, 0, screen_x -1);
-
-	wbkgdset(rborder, COLOR_PAIR(BORDER_COLOR));
-
-	werase(rborder);
+	/* rborder = newwin(screen_y - 2, 1, 0, screen_x -1); */
+	/* wbkgdset(rborder, COLOR_PAIR(BORDER_COLOR)); */
+	/* werase(rborder); */
 
 	stat_win = newwin(1, screen_x, screen_y -2, 0);
 
 	wbkgdset(stat_win, COLOR_PAIR(BORDER_COLOR));
-
 	werase(stat_win);
 
 	status_bar = newwin(1, screen_x - 19, screen_y -1, 0);
@@ -274,9 +267,9 @@ setup_ncurses_interface()
 	wnoutrefresh(status_bar);
 	wnoutrefresh(pos_win);
 	wnoutrefresh(num_win);
-	wnoutrefresh(lborder);
-	wnoutrefresh(mborder);
-	wnoutrefresh(rborder);
+	/* wnoutrefresh(lborder); */
+	/* wnoutrefresh(mborder); */
+	/* wnoutrefresh(rborder); */
 
 	return 1;
 }
@@ -311,20 +304,20 @@ redraw_window(void)
 	wclear(status_bar);
 	wclear(pos_win);
 	wclear(num_win);
-	wclear(rborder);
-	wclear(mborder);
-	wclear(lborder);
+	/* wclear(rborder); */
+	/* wclear(mborder); */
+	/* wclear(lborder); */
 
 	wclear(change_win);
 	wclear(sort_win);
 	
 	wresize(stdscr, screen_y, screen_x);
-	mvwin(sort_win, (screen_y - 14)/2, (screen_x -30)/2);
+	mvwin(sort_win, (screen_y - NUM_SORT_OPTIONS + 3)/2, (screen_x -30)/2);
 	mvwin(change_win, (screen_y - 10)/2, (screen_x -30)/2);
 	wresize(menu_win, screen_y - 1, screen_x);
 	wresize(error_win, (screen_y -10)/2, screen_x -2);
 	mvwin(error_win, (screen_y -10)/2, 1);
-	wresize(lborder, screen_y -2, 1);
+	/* wresize(lborder, screen_y -2, 1); */
 
 	if (curr_stats.number_of_windows == 1)
 	{
@@ -332,7 +325,7 @@ redraw_window(void)
 		wresize(lwin.win, screen_y -3, screen_x -2);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x -1;
-		lwin.window_rows = y -1;
+		lwin.window_rows = y -2;
 
 		wresize(rwin.title, 1, screen_x -1);
 		mvwin(rwin.title, 0, 1);
@@ -340,7 +333,7 @@ redraw_window(void)
 		mvwin(rwin.win, 1, 1);
 		getmaxyx(rwin.win, y, x);
 		rwin.window_width = x -1;
-		rwin.window_rows = y -1;
+		rwin.window_rows = y -2;
 	}
 	else
 	{
@@ -348,10 +341,10 @@ redraw_window(void)
 		wresize(lwin.win, screen_y -3, screen_x/2 -2);
 		getmaxyx(lwin.win, y, x);
 		lwin.window_width = x -1;
-		lwin.window_rows = y -1;
+		lwin.window_rows = y -2;
 
-		mvwin(mborder, 0, screen_x/2 -1);
-		wresize(mborder, screen_y, 2);
+		/* mvwin(mborder, 0, screen_x/2 -1); */
+		/* wresize(mborder, screen_y, 2); */
 
 		wresize(rwin.title, 1, screen_x/2 -2);
 		mvwin(rwin.title, 0, screen_x/2 +1);
@@ -360,7 +353,7 @@ redraw_window(void)
 		mvwin(rwin.win, 1, screen_x/2 +1);
 		getmaxyx(rwin.win, y, x);
 		rwin.window_width = x -1;
-		rwin.window_rows = y -1;
+		rwin.window_rows = y -2;
 	}
 
 
@@ -371,13 +364,13 @@ redraw_window(void)
 
 	if (screen_x % 2)
 	{
-		wresize(rborder, screen_y -2, 2);
-		mvwin(rborder, 0, screen_x -2);
+		/* wresize(rborder, screen_y -2, 2); */
+		/* mvwin(rborder, 0, screen_x -2); */
 	}
 	else
 	{
-		wresize(rborder, screen_y -2, 1);
-		mvwin(rborder, 0, screen_x -1);
+		/* wresize(rborder, screen_y -2, 1); */
+		/* mvwin(rborder, 0, screen_x -1); */
 	}
 
 	wresize(stat_win, 1, screen_x);
@@ -433,7 +426,6 @@ redraw_window(void)
 
 	moveto_list_pos(curr_view, curr_view->list_pos);
 	wrefresh(curr_view->win);
-
 	curr_stats.freeze = 0;
 	curr_stats.need_redraw = 0;
 

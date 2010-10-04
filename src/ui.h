@@ -22,6 +22,7 @@
 #include<limits.h> /*  PATH_MAX */
 #include<ncurses.h>
 #include<stdlib.h> /* off_t mode_t... */
+#include<inttypes.h> /* uintmax_t */
 #include<sys/types.h>
 #include<unistd.h>
 /* For Solaris */
@@ -38,10 +39,12 @@ enum {
 	SORT_BY_MODE,
 	SORT_BY_OWNER_ID,
 	SORT_BY_OWNER_NAME,
-	SORT_BY_SIZE,
+	SORT_BY_SIZE_ASCENDING,
+	SORT_BY_SIZE_DESCENDING,
 	SORT_BY_TIME_ACCESSED,
 	SORT_BY_TIME_CHANGED,
-	SORT_BY_TIME_MODIFIED
+	SORT_BY_TIME_MODIFIED,
+	NUM_SORT_OPTIONS
 };
 
 typedef struct
@@ -54,7 +57,7 @@ typedef struct
 typedef struct 
 {
 	char *name;
-	int size;
+	off_t size;
 	mode_t mode;
 	uid_t uid;
 	gid_t gid;

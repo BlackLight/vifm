@@ -34,30 +34,36 @@
 #include "menus.h"
 #include "status.h"
 
+/*
+#ifndef OFF_T_MAX
+# define OFF_T_MAX TYPE_MAXIMUM(off_t)
+#endif
+
+#ifndef OFF_T_MIN
+# define OFF_T_MIN TYPE_MINIMUM(off_t)
+#endif
+
+uintmax_t
+unsigned_file_size(off_t size)
+{
+	return size + (size < 0) * ((uintmax_t) OFF_T_MAX - OFF_T_MIN + 1);
+}
+*/
 
 void
-describe_file_size (char* buf, int buf_size, FileView *view)
+describe_file_size (char* str, int str_size, off_t num)
 {
-	if (view->dir_entry[view->list_pos].size < 10240)	/* less than 10K */
- 	{
- 		snprintf (buf, buf_size, "%5d  bytes", 
-				(int) view->dir_entry[view->list_pos].size);
- 	}
- 	else if (view->dir_entry[view->list_pos].size < 1048576)/*less than a meg */
- 	{
- 		snprintf (buf, buf_size, "%5.2f Kbytes",
- 			((float) view->dir_entry[view->list_pos].size  / 1024.0));
- 	}
- 	else if (view->dir_entry[view->list_pos].size < 1073741824)/*a  meg */
- 	{
- 		snprintf (buf, buf_size, "%5.2f Mbytes",
- 			((float) view->dir_entry[view->list_pos].size / 1048576.0));
- 	}
- 	else /* bigger than a Gigabyte */
- 	{
-  		snprintf (buf, buf_size, "%5.2f Gbytes",
-  			((float) view->dir_entry[view->list_pos].size / 1073741824.0));
- 	}
+
+	const char* units[] = { " B", "KB", "MB", "GB", "TB", "PB" };
+	int u = 0;
+	off_t d = num;
+
+	while(d >= 1024.0 && u < 6)
+	{
+		d = (d / 1024);
+		++u;
+	}
+	snprintf(str, str_size, " %lu %s", d, units[u]);
 }
 
 void
@@ -120,7 +126,8 @@ show_full_file_properties(FileView *view)
 	snprintf(name_buf, sizeof(name_buf), "%s", 
 			view->dir_entry[view->list_pos].name);
 
-	describe_file_size(size_buf, sizeof(size_buf), view);
+	describe_file_size(size_buf, sizeof(size_buf),
+			view->dir_entry[view->list_pos].size);
 	
 	if((pwd_buf = getpwuid(view->dir_entry[view->list_pos].uid)) == NULL)
 	{
@@ -240,16 +247,20 @@ show_full_file_properties(FileView *view)
 	}
 	wnoutrefresh(menu_win);
 
-	box(menu_win, 0, 0);
+	/* box(menu_win, 0, 0); */
 	wrefresh(menu_win);
 	while(!done)
 	{
 		key = wgetch(menu_win);
 	
 		/* ascii Return - Ctrl-c  - Escape */
-		if(key == 13 || key == 3 || key == 27)
+		if ( key == 13 || key == 3 || key == 27 || key == 'i' )
+		{
+			wborder ( menu_win, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' );
 			done = 1;
+		}
 	}
+
 	werase(menu_win);
 	curr_stats.menu = 0;
 	redraw_window();

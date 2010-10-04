@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
  */
 
-#define VERSION "0.5"
+#define VERSION "0.6"
 
 
 #include<ncurses.h>
@@ -93,6 +93,7 @@ main(int argc, char *argv[])
 	lwin.color_scheme = 0;
 
 	/* These need to be initialized before reading the configuration file */
+	cfg.using_default_config = 0;
 	cfg.command_num = 0;
 	cfg.filetypes_num = 0;
 	cfg.nmapped_num = 0;
@@ -130,10 +131,10 @@ main(int argc, char *argv[])
 
 	lwin.prev_invert = lwin.invert;
 	lwin.hide_dot = 1;
-	strncpy(lwin.regexp, "\\..~$", sizeof(lwin.regexp));
+	strncpy(lwin.regexp, "\\.o$", sizeof(lwin.regexp));
 	rwin.prev_invert = rwin.invert;
 	rwin.hide_dot = 1;
-	strncpy(rwin.regexp, "\\..~$", sizeof(rwin.regexp));
+	strncpy(rwin.regexp, "\\.o$", sizeof(rwin.regexp));
 	cfg.timer = 10;
 	curr_stats.yanked_files = NULL;
 	curr_stats.num_yanked_files = 0;
@@ -151,6 +152,7 @@ main(int argc, char *argv[])
 	curr_stats.register_saved = 0;
 	curr_stats.show_full = 0;
 	curr_stats.view = 0;
+	curr_stats.setting_change = 0;
 
 	if (cfg.show_one_window)
 		curr_stats.number_of_windows = 1;
@@ -183,7 +185,9 @@ main(int argc, char *argv[])
 	rwin.dir_entry[0].name = malloc(sizeof("../") +1);
 	lwin.dir_entry[0].name = malloc(sizeof("../") +1);
 	strcpy(rwin.dir_entry[0].name, "../");
+	rwin.list_rows++;
 	strcpy(lwin.dir_entry[0].name, "../");
+	lwin.list_rows++;
 	change_directory(&rwin, dir);
 	change_directory(&lwin, dir);
 	other_view = &lwin;

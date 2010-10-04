@@ -504,9 +504,9 @@ expand_macros(FileView *view, char *command, char *args,
 						show_error_msg("Memory Error", "Unable to allocate memory");
 						return NULL;
 					}
-					strcat(expanded, "\"");
+					strcat(expanded, "\'");
 					strcat(expanded, other_view->curr_dir);
-					strcat(expanded, "\"");
+					strcat(expanded, "\'");
 					len = strlen(expanded);
 				}
 				break;
@@ -612,6 +612,7 @@ remove_command(char *name)
 
 		if(strlen(command_list[x].action))
 			my_free(command_list[x].action);
+		curr_stats.setting_change = 1;
 
 	}
 	else
@@ -643,6 +644,7 @@ add_command(char *name, char *action)
 	command_list[cfg.command_num].action = (char *)malloc(strlen(action) +1);
 	strcpy(command_list[cfg.command_num].action, action);
 	cfg.command_num++;
+	curr_stats.setting_change = 1;
 
 	qsort(command_list, cfg.command_num, sizeof(command_t), sort_this);
 }
@@ -752,7 +754,7 @@ shellout(char *command, int pause)
 			char *title = strstr(command, cfg.vi_command);
 
 			/* Needed for symlink directories and sshfs mounts */
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s",
+			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
 				   	curr_view->curr_dir);
 
 			my_system(buf);
@@ -798,7 +800,7 @@ shellout(char *command, int pause)
 	{
 		if(cfg.use_screen)
 		{
-			snprintf(buf, sizeof(buf), "screen -X setenv PWD %s",
+			snprintf(buf, sizeof(buf), "screen -X setenv PWD \'%s\'",
 				   	curr_view->curr_dir);
 
 			my_system(buf);
@@ -1363,6 +1365,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 							"%s", cmd->args); 
 					load_dir_list(view, 1);
 					moveto_list_pos(view, 0);
+					curr_stats.setting_change = 1;
 				}
 				else
 				{
@@ -1415,6 +1418,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					view->invert = 1;
 				load_dir_list(view, 1);
 				moveto_list_pos(view, 0);
+				curr_stats.setting_change = 1;
 			}
 			break;
 		case COM_JOBS:	
@@ -1499,6 +1503,7 @@ execute_builtin_command(FileView *view, cmd_t *cmd)
 					cfg.use_screen = 0;
 				else
 					cfg.use_screen = 1;
+				curr_stats.setting_change = 1;
 			}
 			break;
 		case COM_SHELL:

@@ -1159,7 +1159,7 @@ show_commands_menu(FileView *view)
 
 	m.title = (char *)malloc((strlen(" Command ------ Action ") + 1) 
 			* sizeof(char));
-	snprintf(m.title, strlen(" Command ------ Action "), 
+	snprintf(m.title, strlen(" Command ------ Action ") + 1, 
 			" Command ------ Action  ");
 
 	x = 0;

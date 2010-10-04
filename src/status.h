@@ -34,7 +34,6 @@ typedef struct
 	char updir_file[NAME_MAX];
 	int is_console;
 	time_t config_file_mtime;
-	time_t colorscheme_file_mtime;
 	int search;
 	int save_msg;
 	int use_register;
@@ -43,6 +42,7 @@ typedef struct
 	int number_of_windows;
 	int view;
 	int show_full;
+	int setting_change;
 }Status;
 
 extern Status curr_stats;

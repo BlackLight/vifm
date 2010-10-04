@@ -291,7 +291,7 @@ remove_filename_filter(FileView *view)
 	view->prev_filter = (char *)realloc(view->prev_filter,
 			strlen(view->filename_filter) +1);
 	snprintf(view->prev_filter, 
-		sizeof(view->prev_filter), view->filename_filter);
+		sizeof(view->prev_filter), "%s", view->filename_filter);
 	view->filename_filter = (char *)realloc(view->filename_filter,
 			strlen("*") +1);
 	snprintf(view->filename_filter, 
@@ -703,52 +703,64 @@ update_all_windows(void)
 	{
 		if (curr_view == &lwin)
 		{
+			box ( lwin.win, 0, 0 );
+			box ( rwin.win, 0, 0 );
 			touchwin(lwin.title);
 			touchwin(lwin.win);
-			touchwin(lborder);
+			/* touchwin(lborder); */
 			touchwin(stat_win);
 			touchwin(status_bar);
 			touchwin(pos_win);
 			touchwin(num_win);
-			touchwin(rborder);
+			/* touchwin(rborder); */
 
 			/*
 			 * redrawwin() shouldn't be needed.  But without it there is a 
 			 * lot of flickering when redrawing the windows?
 			 */
 
-			redrawwin(lborder);
+			box ( lwin.win, 0, 0 );
+			box ( rwin.win, 0, 0 );
+			/* redrawwin(lborder); */
 			redrawwin(stat_win);
 			redrawwin(status_bar);
 			redrawwin(pos_win);
 			redrawwin(lwin.title);
 			redrawwin(lwin.win);
 			redrawwin(num_win);
-			redrawwin(rborder);
+			/* redrawwin(rborder); */
 
+			box ( lwin.win, 0, 0 );
+			box ( rwin.win, 0, 0 );
 			wnoutrefresh(lwin.title);
 			wnoutrefresh(lwin.win);
 		}
 		else
 		{
+			box ( lwin.win, 0, 0 );
+			box ( rwin.win, 0, 0 );
 			touchwin(rwin.title);
 			touchwin(rwin.win);
-			touchwin(lborder);
+			/* touchwin(lborder); */
 			touchwin(stat_win);
 			touchwin(status_bar);
 			touchwin(pos_win);
 			touchwin(num_win);
-			touchwin(rborder);
+			/* touchwin(rborder); */
 
+			box ( lwin.win, 0, 0 );
+			box ( rwin.win, 0, 0 );
 			redrawwin(rwin.title);
 			redrawwin(rwin.win);
-			redrawwin(lborder);
+			/* redrawwin(lborder); */
 			redrawwin(stat_win);
 			redrawwin(status_bar);
 			redrawwin(pos_win);
 			redrawwin(num_win);
-			redrawwin(rborder);
+			/* redrawwin(rborder); */
 
+			box ( lwin.win, 0, 0 );
+			box ( rwin.win, 0, 0 );
 			wnoutrefresh(rwin.title);
 			wnoutrefresh(rwin.win);
 		}
@@ -756,43 +768,49 @@ update_all_windows(void)
 	/* Two Pane View */
 	else
 	{
+		/* box ( lwin.win, 0, 0 ); */
+		/* box ( rwin.win, 0, 0 ); */
 		touchwin(lwin.title);
 		touchwin(lwin.win);
-		touchwin(mborder);
+		/* touchwin(mborder); */
 		touchwin(rwin.title);
 		touchwin(rwin.win);
-		touchwin(lborder);
+		/* touchwin(lborder); */
 		touchwin(stat_win);
 		touchwin(status_bar);
 		touchwin(pos_win);
 		touchwin(num_win);
-		touchwin(rborder);
+		/* touchwin(rborder); */
 
+		/* box ( lwin.win, 0, 0 ); */
+		/* box ( rwin.win, 0, 0 ); */
 		redrawwin(lwin.title);
 		redrawwin(lwin.win);
-		redrawwin(mborder);
+		/* redrawwin(mborder); */
 		redrawwin(rwin.title);
 		redrawwin(rwin.win);
-		redrawwin(lborder);
+		/* redrawwin(lborder); */
 		redrawwin(stat_win);
 		redrawwin(status_bar);
 		redrawwin(pos_win);
 		redrawwin(num_win);
-		redrawwin(rborder);
+		/* redrawwin(rborder); */
 
+		box ( lwin.win, 0, 0 );
+		box ( rwin.win, 0, 0 );
 		wnoutrefresh(lwin.title);
 		wnoutrefresh(lwin.win);
-		wnoutrefresh(mborder);
+		/* wnoutrefresh(mborder); */
 		wnoutrefresh(rwin.title);
 		wnoutrefresh(rwin.win);
 	}
 
-	wnoutrefresh(lborder);
+	/* wnoutrefresh(lborder); */
 	wnoutrefresh(stat_win);
 	wnoutrefresh(status_bar);
 	wnoutrefresh(pos_win);
 	wnoutrefresh(num_win);
-	wnoutrefresh(rborder);
+	/* wnoutrefresh(rborder); */
 
 	doupdate();
 }
@@ -927,6 +945,7 @@ main_key_press_cb(FileView *view)
 				break;
 			case 2: /* ascii Ctrl B */
 			case KEY_PPAGE:
+			case 'K':
 				view->list_pos = view->list_pos - view->window_rows;
 				moveto_list_pos(view, view->list_pos);
 				break;
@@ -945,12 +964,17 @@ main_key_press_cb(FileView *view)
 				break;
 			case 6: /* ascii Ctrl F */
 			case KEY_NPAGE:
+			case 'J':
 				view->list_pos = view->list_pos + view->window_rows;
 				moveto_list_pos(view, view->list_pos);
 				break;
+
+			case 'i':
 			case 7: /* ascii Ctrl G */
 				if(!curr_stats.show_full)
 					curr_stats.show_full = 1;
+				else
+					curr_stats.show_full = 0;
 				break;
 			case 9: /* ascii Tab */
 			case 32:  /* ascii Spacebar */
@@ -1059,6 +1083,11 @@ main_key_press_cb(FileView *view)
 					reset_last_char = 1;
 				}
 				break;
+
+			case 'S': /* Open a shell (powered by blacklight) */
+				shellout(NULL, 0);
+				break;
+
 			case 'a': /* zo Show dot files */
 				if(curr_stats.last_char == 'z')
 					toggle_dot_files(view);
@@ -1178,7 +1207,8 @@ main_key_press_cb(FileView *view)
 				break;
 			case 'o': /* zo Show dot files */
 				if(curr_stats.last_char == 'z')
-					show_dot_files(view);
+					/* show_dot_files(view); */
+					toggle_dot_files(view);
 				reset_last_char = 1;
 				break;
 			case 'p': /* put files */
@@ -1188,6 +1218,28 @@ main_key_press_cb(FileView *view)
 				redraw_window();
 /*_SZ_END*/
 				break;
+
+			case 'q': /* quit, added by BlackLight */
+				if(cfg.vim_filter)
+				{
+					char buf[256];
+					FILE *fp;
+
+
+					snprintf(buf, sizeof(buf), "%s/vimfiles", cfg.config_dir);
+					fp = fopen(buf, "w");
+					endwin();
+					fprintf(fp, "NULL");
+					fclose(fp);
+					exit(0);
+				}
+
+				write_config_file();
+
+				endwin();
+				system("clear");
+				exit(0);
+
 			case 's': /* tmp shellout **** This should be done with key mapping */
 				shellout(NULL, 0);
 				break;
